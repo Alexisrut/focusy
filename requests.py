@@ -16,6 +16,14 @@ class TaskSchema(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
+class StatsSchema(BaseModel):
+    id: int
+    # Add columns from your Excel file here. Example:
+    tg_id: str
+    coins: int
+    xp: int
+    
+    model_config = ConfigDict(from_attributes=True)
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -48,6 +56,13 @@ async def add_task_users(task_id: int, session: AsyncSession):
     for user in users:
         user_task = UserTask(user_id=user.id, task_id=task.id)
         session.add(user_task)
+
+async def get_user(tg_id):
+    async with async_session() as session:
+        tg_id = int(tg_id)
+        user = await session.scalar(select(User).where(User.tg_id == tg_id))
+        if user != None:
+            return user.id
 
 async def add_user(tg_id, name, year):
     async with async_session() as session:
@@ -98,8 +113,16 @@ async def get_incomplete_tasks(user_id: int) -> list[Task]:
             .where(UserTask.user_id == user_id)
             .where(UserTask.completed == False)
         )
+        
+        return serialized_tasks
+
+async def mark_task_completed(user_id: int):
+    async with async_session() as session:
+        result = await session.scalars(
+            select(UserInfo).where(UserInfo.user_id == user_id)
+        )
         serialized_tasks = [
-            TaskSchema.model_validate(t).model_dump() for t in result
+            StatsSchema.model_validate(t).model_dump() for t in result
         ]
         return serialized_tasks
 

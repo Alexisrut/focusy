@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from config import BOT_TOKEN
+from aiogram.types import InlineKeyboardMarkup, WebAppInfo, InlineKeyboardButton
 
 from sqlalchemy import ForeignKey, Column, BigInteger, String, DateTime, Boolean
 from typing import List
@@ -14,7 +14,7 @@ from models import async_session
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
-
+BOT_TOKEN = '8158341812:AAHyragguB3-u2uIYjfqYuH7g5burb551c0'
 # Initialize bot and dispatcher
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
@@ -42,7 +42,7 @@ async def cmd_start(message: types.Message):
     )
 
 # Handle button click
-@dp.message(F.text == "Start Registration")
+@dp.message(F.text == "Готов!")
 async def start_registration(message: types.Message, state: FSMContext):
     await message.answer("Как мне к тебе обращаться", reply_markup=types.ReplyKeyboardRemove())
     await state.set_state(Form.name)
@@ -66,8 +66,18 @@ async def process_year(message: types.Message, state: FSMContext):
         name=user_data['name'],
         year=message.text
     )
-    
-    await message.answer("Отлично! Заходи быстрее в приложение и мы начнём👇")
+
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text="Open Mini App", 
+            web_app=WebAppInfo(url='https://focus-c6088.web.app')
+        )]
+    ])
+
+    await message.answer(
+        "Отлично! Заходи быстрее в приложение и мы начнём👇",
+        reply_markup=keyboard
+    )
     await state.clear()
 
 # Run the bot

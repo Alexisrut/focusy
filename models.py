@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Column, BigInteger, String, DateTime, Boolean
+from sqlalchemy import ForeignKey, Column, BigInteger, String, DateTime, Boolean, Integer
 from typing import List
 from sqlalchemy.orm import Mapped, DeclarativeBase, mapped_column, relationship
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncAttrs, async_sessionmaker
@@ -39,7 +39,7 @@ class UserInfo(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     tg_id = mapped_column(BigInteger)
     name: Mapped[str] = mapped_column(String(64))
-    year: Mapped[int] = mapped_column(String(64))
+    year: Mapped[int] = mapped_column(Integer)
     coins: Mapped[int] = mapped_column(default=0)
     xp: Mapped[int] = mapped_column(default=0)
     subscription: Mapped[bool] = mapped_column(default=False)
