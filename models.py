@@ -26,12 +26,12 @@ class UserTask(Base):
     __tablename__ = 'user_tasks'  # Промежуточная таблица (M2M)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('user_info.id', ondelete="CASCADE"))
-    task_id: Mapped[int] = mapped_column(ForeignKey('tasks.id', ondelete="CASCADE"))
+    user_id: Mapped[int] = mapped_column(ForeignKey('user_info.id'))
+    task_id: Mapped[int] = mapped_column(ForeignKey('tasks.id'))
     completed: Mapped[bool] = mapped_column(Boolean, default=False) 
 
-    user: Mapped["UserInfo"] = relationship("UserInfo", back_populates="tasks_completed")
-    task: Mapped["Task"] = relationship("Task", back_populates="completed_by_users")
+    user: Mapped["UserInfo"] = relationship(back_populates="completed_tasks")
+    task: Mapped["Task"] = relationship(back_populates="completed_by")
 
 class UserInfo(Base):
     __tablename__ = 'user_info'
@@ -44,8 +44,9 @@ class UserInfo(Base):
     time_of_subscription: Mapped[int] = mapped_column(BigInteger, default=0)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
 
-    tasks_completed: Mapped[List[UserTask]] = relationship(
-        "UserTask", back_populates="user", cascade="all, delete-orphan"
+    completed_tasks: Mapped[list["UserTask"]] = relationship(
+        back_populates="user", 
+        cascade="all, delete-orphan"
     )
 
 class Task(Base):
@@ -60,8 +61,9 @@ class Task(Base):
     task_incorrect: Mapped[str] = mapped_column(String(16))  # Changed from bool to str
     task_explain: Mapped[str] = mapped_column(String(512), nullable=False)
 
-    completed_by_users: Mapped[List[UserTask]] = relationship(
-        "UserTask", back_populates="task", cascade="all, delete-orphan"
+    completed_by: Mapped[list["UserTask"]] = relationship(
+        back_populates="task", 
+        cascade="all, delete-orphan"
     )
 
 

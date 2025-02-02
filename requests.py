@@ -16,6 +16,38 @@ class TaskSchema(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
+async def add_user_tasks(user_id: int, session: AsyncSession):
+    # Create a new use
+
+    # Fetch all existing tasks
+    result = await session.execute(select(Task))
+    tasks = result.scalars().all()
+
+    # Create UserTask entries for each task
+    for task in tasks:
+        user_task = UserTask(user_id=user_id, task_id=task.id)
+        session.add(user_task)
+
+async def add_task_users(task_id: int, session: AsyncSession):
+        # Fetch the task to ensure it exists
+    result = await session.execute(select(Task).where(Task.id == task_id))
+    task = result.scalar_one_or_none()
+    
+    if not task:
+        raise ValueError("Task not found")
+
+    # Fetch all existing users
+    result = await session.execute(select(User))
+    users = result.scalars().all()
+
+    # Create UserTask entries for each user
+    for user in users:
+        user_task = UserTask(user_id=user.id, task_id=task.id)
+        session.add(user_task)
 async def add_user(tg_id):
     async with async_session() as session:
         print(tg_id)
@@ -40,7 +72,8 @@ async def add_user(tg_id):
         session.add(new_user_info)
         await session.commit()
         await session.refresh(new_user_info)
-
+        await add_user_tasks(new_user.id, session)
+        await session.commit()
         return new_user.id
 
 async def get_completed_tasks_count(user_id: int) -> int:
@@ -67,32 +100,14 @@ async def get_incomplete_tasks(user_id: int) -> list[Task]:
         ]
         return serialized_tasks
 
-async def get_or_create_user_task(user_id: int, task_id: int) -> UserTask:
-    """Get or create UserTask relationship for a user and task"""
+async def mark_task_completed(user_id: int, task_id: int):
+    """Mark specific task as completed for user"""
     async with async_session() as session:
-        # Try to get existing UserTask
         user_task = await session.scalar(
             select(UserTask)
             .where(UserTask.user_id == user_id)
             .where(UserTask.task_id == task_id)
         )
-        
-        if not user_task:
-            # Create new relationship if doesn't exist
-            user_task = UserTask(
-                user_id=user_id,
-                task_id=task_id,
-                completed=False
-            )
-            session.add(user_task)
-            await session.commit()
-            await session.refresh(user_task)
-            
-        return user_task
-
-async def mark_task_completed(user_id: int, task_id: int):
-    """Mark specific task as completed for user"""
-    async with async_session() as session:
-        user_task = await get_or_create_user_task(user_id, task_id)
         user_task.completed = True
+        print(user_task.user_id, user_task.task_id)
         await session.commit()

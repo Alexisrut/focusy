@@ -73,6 +73,10 @@ async def incomplete_task(tg_id: int):
     print(tasks)
     return tasks
 
-@app.get("/api/mark_complete/{tg_id}/{task_id}")
+@app.post("/api/mark_complete/{tg_id}/{task_id}")
 async def mark_complete_task(tg_id, task_id):
-    rq.mark_task_completed(tg_id, task_id)
+    tg_id = int(tg_id)
+    task_id = int(task_id)
+    user_id = await rq.add_user(tg_id)
+    print(f'Userererere: {user_id}, {task_id}')
+    await rq.mark_task_completed(user_id, task_id)
