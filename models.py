@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncAttrs, async_sessio
 from datetime import datetime
 
 engine = create_async_engine(
-    "sqlite+aiosqlite:///focusy.db?charset=utf8",
+    "sqlite+aiosqlite:///./focusy.db?charset=utf8",
     connect_args={"check_same_thread": False},
     echo=True
 )
@@ -20,7 +20,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(primary_key = True)
-    tg_id: Mapped[str] = mapped_column(String(32))
+    tg_id = mapped_column(BigInteger)
 
 class UserTask(Base):
     __tablename__ = 'user_tasks'  # Промежуточная таблица (M2M)
@@ -41,7 +41,7 @@ class UserInfo(Base):
     coins: Mapped[int] = mapped_column(default=0)
     xp: Mapped[int] = mapped_column(default=0)
     subscription: Mapped[bool] = mapped_column(default=False)
-    time_of_subscription: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=0)
+    time_of_subscription: Mapped[int] = mapped_column(BigInteger, default=0)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
 
     tasks_completed: Mapped[List[UserTask]] = relationship(
