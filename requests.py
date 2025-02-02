@@ -48,7 +48,8 @@ async def add_task_users(task_id: int, session: AsyncSession):
     for user in users:
         user_task = UserTask(user_id=user.id, task_id=task.id)
         session.add(user_task)
-async def add_user(tg_id):
+
+async def add_user(tg_id, name, year):
     async with async_session() as session:
         print(tg_id)
         tg_id = int(tg_id)
@@ -63,6 +64,8 @@ async def add_user(tg_id):
         registered_user = await session.scalar(select(User).where(User.tg_id == tg_id))
         new_user_info = UserInfo(
             tg_id = tg_id, 
+            name = name,
+            year = int(year),
             user_id = registered_user.id,
             coins = 0,
             xp = 0,

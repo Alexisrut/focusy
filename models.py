@@ -38,6 +38,8 @@ class UserInfo(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     tg_id = mapped_column(BigInteger)
+    name: Mapped[str] = mapped_column(String(64))
+    year: Mapped[int] = mapped_column(String(64))
     coins: Mapped[int] = mapped_column(default=0)
     xp: Mapped[int] = mapped_column(default=0)
     subscription: Mapped[bool] = mapped_column(default=False)
