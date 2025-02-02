@@ -18,14 +18,15 @@ class TaskSchema(BaseModel):
 
 async def add_user(tg_id):
     async with async_session() as session:
+        print(tg_id)
         user = await session.scalar(select(User).where(User.tg_id == tg_id))
-        if user:
+        if user != None:
             return user.id
-        user = User(tg_id = tg_id)
-        session.add(user)
+        new_user = User(tg_id = str(tg_id))
+        session.add(new_user)
+        await session.flush()
         await session.commit()
-        await session.refresh(user)
-        return user.id
+        return new_user.id
 
 async def get_completed_tasks_count(user_id: int) -> int:
     """Get count of completed tasks for specific user"""

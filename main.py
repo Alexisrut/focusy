@@ -10,18 +10,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models import init_db, Task, async_session
 import requests as rq
 
-async def import_tasks_from_excel(session: AsyncSession):
+async def import_tasks_from_excel(session):
     df = pd.read_excel('task_9.xlsx')
     
+    df['task_explain'] = df['task_explain'].fillna('').astype(str)
+
     for _, row in df.iterrows():
         task = Task(
-            task_id = row['task_id'],
-            task_name = row['task_name'],
-            task_category = row['tsk_category'],
-            task_word = row['task_word'],
-            task_correct = row['task_correct'],
-            task_incorrect = row['task_incorrect'],
-            task_explain = row['task_explain']
+            task_id=row['task_id'],
+            task_name=row['task_name'],
+            task_category=row['task_category'],
+            task_word=row['task_word'],
+            task_correct=row['task_correct'],
+            task_incorrect=row['task_incorrect'],
+            task_explain=row['task_explain']
         )
         session.add(task)
     
@@ -33,7 +35,7 @@ async def lifespan(app: FastAPI):
     await init_db()
     print('Bot is ready')
     async with async_session() as session:
-        import_tasks_from_excel(session)
+        await import_tasks_from_excel(session)  # Add await here
     yield   
 
 
@@ -65,8 +67,10 @@ async def stats(tg_id: int):
 
 @app.get("/api/incomplete-tasks/{tg_id}")
 async def incomplete_task(tg_id: int):
+    print('get_incomplete')
     user_id = await rq.add_user(tg_id)
     tasks = await rq.get_incomplete_tasks(user_id)
+    print(tasks)
     return tasks
 
 @app.get("/api/mark_complete/{tg_id}/{task_id}")
