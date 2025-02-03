@@ -72,10 +72,19 @@ async def stats(tg_id: int):
 @app.get("/api/incomplete-tasks/{tg_id}")
 async def incomplete_task(tg_id: int):
     print('get_incomplete')
-    user_id = await rq.add_user(tg_id)
+    user_id = await rq.get_user(tg_id)
     tasks = await rq.get_incomplete_tasks(user_id)
     print(tasks)
     return tasks
+
+@app.get("/api/theme-tasks/{tg_id}")
+async def incomplete_task(tg_id: int):
+    print('get_theme')
+    user_id = await rq.get_user(tg_id)
+    tasks = await rq.get_theme(user_id)
+    print(tasks)
+    return tasks
+
 
 @app.post("/api/mark_complete/{tg_id}/{task_id}")
 async def mark_complete_task(tg_id, task_id):

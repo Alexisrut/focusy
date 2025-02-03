@@ -113,10 +113,12 @@ async def get_incomplete_tasks(user_id: int) -> list[Task]:
             .where(UserTask.user_id == user_id)
             .where(UserTask.completed == False)
         )
-        
+        serialized_tasks = [
+            TaskSchema.model_validate(t).model_dump() for t in result
+        ]
         return serialized_tasks
 
-async def mark_task_completed(user_id: int):
+async def get_stats(user_id: int):
     async with async_session() as session:
         result = await session.scalars(
             select(UserInfo).where(UserInfo.user_id == user_id)
@@ -125,6 +127,17 @@ async def mark_task_completed(user_id: int):
             StatsSchema.model_validate(t).model_dump() for t in result
         ]
         return serialized_tasks
+
+async def get_theme(user_id: int):
+    async with async_session() as session:
+        result = await session.scalars(
+            select(func.distinct(Task.task_name))
+        )
+        unique_names = [name for name in result]
+        return unique_names
+
+
+
 
 async def mark_task_completed(user_id: int, task_id: int):
     """Mark specific task as completed for user"""
