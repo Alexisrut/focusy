@@ -104,12 +104,25 @@ async def get_completed_tasks_count(user_id: int) -> int:
         )
         return result or 0
 
-async def get_incomplete_tasks(user_id: int) -> list[Task]:
+async def get_theme_completed_tasks_count(user_id: int, theme: str) -> int:
+    """Get count of completed tasks for specific user"""
+    async with async_session() as session:
+        result = await session.scalar(
+            select(func.count(UserTask.id))
+            .join(UserTask, Task.id == UserTask.task_id)
+            .where(UserTask.theme == theme)
+            .where(UserTask.user_id == user_id)
+        )
+        return result or 0
+
+
+async def get_incomplete_tasks(user_id: int, theme: str) -> list[Task]:
     """Get list of incomplete tasks for specific user"""
     async with async_session() as session:
         result = await session.scalars(
             select(Task)
             .join(UserTask, Task.id == UserTask.task_id)
+            .where(Task.task_name == theme)
             .where(UserTask.user_id == user_id)
             .where(UserTask.completed == False)
         )
@@ -136,7 +149,22 @@ async def get_theme(user_id: int):
         unique_names = [name for name in result]
         return unique_names
 
+async def change_coins(user_id: int, coins: int):
+    async with async_session() as session:
+        result = await session.scalars(
+            select(UserInfo).where(UserInfo.user_id == user_id)
+        )
+        result.coins += coins
+        await session.commit()
 
+async def change_xp(user_id: int, xp: int):
+    async with async_session() as session:
+        result = await session.scalars(
+            select(UserInfo).where(UserInfo.user_id == user_id)
+        )
+        result.xp += xp
+        await session.commit()
+        
 
 
 async def mark_task_completed(user_id: int, task_id: int):
@@ -149,4 +177,16 @@ async def mark_task_completed(user_id: int, task_id: int):
         )
         user_task.completed = True
         print(user_task.user_id, user_task.task_id)
+        await session.commit()
+
+async def mark_theme_incompleted(user_id: int, theme: str):
+    async with async_session() as session:
+        result = await session.scalars(
+            select(Task)
+            .join(UserTask, Task.id == UserTask.task_id)
+            .where(Task.task_name == theme)
+            .where(UserTask.user_id == user_id)
+        )
+        for i in result:
+            i.completed = False
         await session.commit()

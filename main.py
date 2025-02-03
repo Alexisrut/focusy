@@ -50,17 +50,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/api/tasks/{tg_id}")
-async def get_tasks(tg_id: int):
-    user_id = await rq.add_user(tg_id)
-    return await rq.get_theme(user_id)
-
-@app.get("/api/completed/{tg_id}")
-async def profile(tg_id: int):
+#Кол-во выполненных всего
+@app.get("/api/all_completed/{tg_id}")
+async def all_completed(tg_id: int):
     user = await rq.add_user(tg_id)
     completed_tasks_count = await rq.get_completed_tasks_count(user)
     return completed_tasks_count
 
+#Кол-во выполненных по теме
+@app.get("/api/theme_completed/{tg_id}/{theme}")
+async def theme_completed(tg_id: int):
+    user = await rq.add_user(tg_id)
+    completed_tasks_count = await rq.get_theme_completed_tasks_count(user, theme)
+    return completed_tasks_count
+
+#Получение xp + coins - готово
 @app.get("/api/stats/{tg_id}")
 async def stats(tg_id: int):
     print('get_stats')
@@ -68,24 +72,40 @@ async def stats(tg_id: int):
     stats = await rq.get_stats(user_id)
     return stats
 
+#Изменение xp + coins - готово
+@app.post("/api/change_coins/{tg_id}/{amount}")
+async def change_coins(tg_id: int, amount: str):
+    print('add_coins')
+    user_id = await rq.add_user(tg_id)
+    coins = int(amount)
+    await rq.change_coins(user_id, coins)
 
-@app.get("/api/incomplete-tasks/{tg_id}")
+@app.post("/api/change_xp/{tg_id}/{amount}")
+async def change_xp(tg_id: int, amount: str):
+    print('add_xp')
+    user_id = await rq.add_user(tg_id)
+    xp = int(amount)
+    await rq.change_xp(user_id, xp)
+
+#Получение невыполненных заданий по теме - готово
+@app.get("/api/incomplete-tasks/{tg_id}/{theme}")
 async def incomplete_task(tg_id: int):
     print('get_incomplete')
     user_id = await rq.get_user(tg_id)
-    tasks = await rq.get_incomplete_tasks(user_id)
+    tasks = await rq.get_incomplete_tasks(user_id, theme)
     print(tasks)
     return tasks
 
+#Получение тем по предмету - готово
 @app.get("/api/theme-tasks/{tg_id}")
-async def incomplete_task(tg_id: int):
+async def theme_task(tg_id: int):
     print('get_theme')
     user_id = await rq.get_user(tg_id)
     tasks = await rq.get_theme(user_id)
     print(tasks)
     return tasks
 
-
+#Измение готовности - готово
 @app.post("/api/mark_complete/{tg_id}/{task_id}")
 async def mark_complete_task(tg_id, task_id):
     tg_id = int(tg_id)
@@ -93,3 +113,10 @@ async def mark_complete_task(tg_id, task_id):
     user_id = await rq.get_user(tg_id)
     print(f'Userererere: {user_id}, {task_id}')
     await rq.mark_task_completed(user_id, task_id)
+
+#Все задания в неготовые - готово
+@app.post("/api/full_to_incomplete/{tg_id}/{theme}")
+async def full_to_incomplete(tg_id, theme):
+    tg_id = int(tg_id)
+    user_id = await rq.get_user(tg_id)
+    await rq.mark_theme_incompleted(user_id, theme)
