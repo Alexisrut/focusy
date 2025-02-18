@@ -22,7 +22,7 @@ uvicorn main:app --reload
 - `main.py` — основной файл с API-эндпоинтами
 - `models.py` — модели базы данных
 - `requests.py` — функции для API-эндпоинтов
-- `schemas.py` — схемы Pydantic для валидации данных
+- `bot.py` — код телеграмм бота на aiogram
 
 ## API-эндпоинты
 
